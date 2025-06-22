@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import base64
 import requests
 import os
@@ -10,9 +11,10 @@ load_dotenv()
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 REPO_OWNER = os.getenv('REPO_OWNER')
 REPO_NAME = os.getenv('REPO_NAME')
-UPLOAD_PATH = os.getenv('UPLOAD_PATH', '')
+UPLOAD_PATH = os.getenv('UPLOAD_PATH', 'imagens')
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/upload", methods=["POST"])
 def upload_image():
@@ -23,11 +25,9 @@ def upload_image():
         return jsonify({"error": "Imagem não fornecida"}), 400
 
     try:
-        # Remove o prefixo data URL (ex: "data:image/png;base64,")
         header, encoded = image_data.split(",", 1)
         binary_data = base64.b64decode(encoded)
 
-        # Nome do arquivo com timestamp UTC
         filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.png"
         path = f"{UPLOAD_PATH}/{filename}" if UPLOAD_PATH else filename
 
@@ -54,4 +54,4 @@ def upload_image():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
